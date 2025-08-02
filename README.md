@@ -90,7 +90,9 @@ Copy
 Edit
 
 ---
+## QUICK TIPS
 
+Add  ![[Trading/Charts/BalanceChart]] to any Obsidian note to produce your balance sheet.
 ## 🛡 Security
 
 - `.env` is excluded via `.gitignore`
