@@ -17,39 +17,16 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
-
-# === Load config ===
-load_dotenv()
-
-api_key = os.getenv("KUCOIN_API_KEY")
-api_secret = os.getenv("KUCOIN_API_SECRET")
-api_passphrase = os.getenv("KUCOIN_API_PASSPHRASE")
-currency = os.getenv("KUCOIN_BALANCE_CURRENCY", "USDT")
-vault_path = os.getenv("OBSIDIAN_VAULT_PATH")
-balance_folder = os.getenv("BALANCE_FOLDER", "Trading/Balances/KuCoin")
+ 
+api_key = ""
+api_secret = ""
+api_passphrase = ""
+currency = "USDT"
+vault_path = ""
+balance_folder = "Trading/Balances/KuCoin"
 cache_file = os.path.expanduser("~/.kucoin_balance_log.json")
-api_timeout = float(os.getenv("KUCOIN_API_TIMEOUT", "10"))
-
-# Ensure all required environment variables are present
-required_env = {
-    "KUCOIN_API_KEY": api_key,
-    "KUCOIN_API_SECRET": api_secret,
-    "KUCOIN_API_PASSPHRASE": api_passphrase,
-    "OBSIDIAN_VAULT_PATH": vault_path,
-}
-missing = [name for name, value in required_env.items() if not value]
-if missing:
-    raise SystemExit(
-        f"Missing required environment variables: {', '.join(missing)}"
-    )
-
-# === CLI args ===
-parser = argparse.ArgumentParser()
-parser.add_argument("--date", help="Override date for backfill (YYYY-MM-DD)")
-args = parser.parse_args()
-
-today = datetime.today().strftime("%Y-%m-%d")
-target_date = args.date if args.date else today
+api_timeout = 10.0
+today = None
 
 # === KuCoin auth ===
 def kucoin_futures_headers(endpoint, method="GET"):
@@ -128,12 +105,46 @@ def mark_logged(date_str: str):
         return
     with open(cache_file, "w") as f:
         json.dump({"last_logged_date": date_str}, f)
+ 
 
 # === Main ===
-if __name__ == "__main__":
+def main():
+    global api_key, api_secret, api_passphrase, currency, vault_path
+    global balance_folder, cache_file, api_timeout, today
+
+    load_dotenv()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--date", help="Override date for backfill (YYYY-MM-DD)")
+    args = parser.parse_args()
+
+    api_key = os.getenv("KUCOIN_API_KEY", "")
+    api_secret = os.getenv("KUCOIN_API_SECRET", "")
+    api_passphrase = os.getenv("KUCOIN_API_PASSPHRASE", "")
+    currency = os.getenv("KUCOIN_BALANCE_CURRENCY", "USDT")
+    vault_path = os.getenv("OBSIDIAN_VAULT_PATH", "")
+    balance_folder = os.getenv("BALANCE_FOLDER", "Trading/Balances/KuCoin")
+    cache_file = os.path.expanduser("~/.kucoin_balance_log.json")
+    api_timeout = float(os.getenv("KUCOIN_API_TIMEOUT", "10"))
+
+    required_env = {
+        "KUCOIN_API_KEY": api_key,
+        "KUCOIN_API_SECRET": api_secret,
+        "KUCOIN_API_PASSPHRASE": api_passphrase,
+        "OBSIDIAN_VAULT_PATH": vault_path,
+    }
+    missing = [name for name, value in required_env.items() if not value]
+    if missing:
+        raise SystemExit(
+            f"Missing required environment variables: {', '.join(missing)}"
+        )
+
+    today = datetime.today().strftime("%Y-%m-%d")
+    target_date = args.date if args.date else today
+
     if already_logged(target_date):
         logger.warning("🟡 Already logged today — skipping.")
-        exit(0)
+        return
 
     try:
         balance = fetch_futures_balance(currency)
@@ -150,7 +161,10 @@ if __name__ == "__main__":
             change,
             pct,
         )
-
     except Exception as e:
         logger.exception("❌ Error: %s", e)
+
+
+if __name__ == "__main__":
+    main()
 
