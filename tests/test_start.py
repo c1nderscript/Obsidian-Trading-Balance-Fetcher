@@ -3,6 +3,9 @@ import sys
 from pathlib import Path
 import importlib.util
 import logging
+from datetime import datetime, timedelta
+
+import pytest
 
 # Ensure required env vars exist before importing module
 os.environ.setdefault("KUCOIN_API_KEY", "testkey")
@@ -84,3 +87,25 @@ def test_already_logged_invalid_json(tmp_path, monkeypatch, caplog):
     with caplog.at_level(logging.WARNING):
         assert not start.already_logged("2024-01-01")
     assert "Failed to read cache file" in caplog.text
+
+
+def test_main_valid_date(monkeypatch):
+    monkeypatch.setattr(start, "fetch_futures_balance", lambda currency: 100.0)
+    monkeypatch.setattr(start, "read_previous_balance", lambda d: 90.0)
+    monkeypatch.setattr(start, "write_balance", lambda d, b: None)
+    monkeypatch.setattr(start, "mark_logged", lambda d: None)
+    monkeypatch.setattr(start, "already_logged", lambda d: False)
+    start.main(["--date", "2000-01-01"])
+
+
+def test_main_invalid_format(monkeypatch):
+    with pytest.raises(SystemExit) as exc:
+        start.main(["--date", "20-01-01"])
+    assert "Invalid date format" in str(exc.value)
+
+
+def test_main_future_date(monkeypatch):
+    future = (datetime.today() + timedelta(days=1)).strftime("%Y-%m-%d")
+    with pytest.raises(SystemExit) as exc:
+        start.main(["--date", future])
+    assert "future" in str(exc.value)

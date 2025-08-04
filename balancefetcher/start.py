@@ -210,8 +210,18 @@ def main(argv: Optional[list[str]] = None) -> None:
             f"Missing required environment variables: {', '.join(missing)}"
         )
 
-    today = datetime.today().strftime("%Y-%m-%d")
-    target_date = args.date if args.date else today
+    today_dt = datetime.today().date()
+    today = today_dt.strftime("%Y-%m-%d")
+    if args.date:
+        try:
+            target_dt = datetime.strptime(args.date, "%Y-%m-%d").date()
+        except ValueError:
+            raise SystemExit("Invalid date format. Use YYYY-MM-DD.")
+        if target_dt > today_dt:
+            raise SystemExit("Date cannot be in the future.")
+        target_date = target_dt.strftime("%Y-%m-%d")
+    else:
+        target_date = today
 
     if already_logged(target_date):
         logger.warning("🟡 Already logged today — skipping.")
