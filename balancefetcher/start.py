@@ -19,6 +19,7 @@ currency = os.getenv("KUCOIN_BALANCE_CURRENCY", "USDT")
 vault_path = os.getenv("OBSIDIAN_VAULT_PATH")
 balance_folder = "Trading/Balances/KuCoin"
 cache_file = os.path.expanduser("~/.kucoin_balance_log.json")
+api_timeout = float(os.getenv("KUCOIN_API_TIMEOUT", "10"))
 
 # === CLI args ===
 parser = argparse.ArgumentParser()
@@ -52,7 +53,7 @@ def fetch_futures_balance(currency="USDT"):
     endpoint = f"/api/v1/account-overview?currency={currency}"
     url = "https://api-futures.kucoin.com" + endpoint
     headers = kucoin_futures_headers(endpoint)
-    res = requests.get(url, headers=headers)
+    res = requests.get(url, headers=headers, timeout=api_timeout)
     res.raise_for_status()
     return float(res.json()["data"]["accountEquity"])
 

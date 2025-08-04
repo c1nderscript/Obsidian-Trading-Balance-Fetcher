@@ -18,6 +18,7 @@ Fetches your **KuCoin Futures account balance** and logs it daily into a Markdow
 - ✅ Prevents duplicate logs via `.json` cache
 - ✅ Computes daily PnL delta
 - ✅ Supports manual backfilling via `--date YYYY-MM-DD`
+- ✅ Configurable request timeout via `KUCOIN_API_TIMEOUT` (default 10s)
 
 ---
 
