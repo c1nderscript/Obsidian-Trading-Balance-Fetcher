@@ -160,8 +160,17 @@ def mark_logged(date_str: str) -> None:
  
 
 # === Main ===
-def main() -> None:
-    """Command line entry point for balance logging."""
+def main(argv: Optional[list[str]] = None) -> None:
+    """Command line entry point for balance logging.
+
+    Parameters
+    ----------
+    argv:
+        Optional sequence of CLI arguments. If ``None`` (the default), values
+        from :data:`sys.argv` are used. This indirection allows the function to
+        be invoked programmatically during testing without triggering argument
+        parsing on import.
+    """
 
     global api_key, api_secret, api_passphrase, currency, vault_path
     global balance_folder, cache_file, api_timeout, today
@@ -170,7 +179,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--date", help="Override date for backfill (YYYY-MM-DD)")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     api_key = os.getenv("KUCOIN_API_KEY", "")
     api_secret = os.getenv("KUCOIN_API_SECRET", "")
