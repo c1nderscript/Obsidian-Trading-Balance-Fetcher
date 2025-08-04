@@ -31,47 +31,45 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
+
 # Update `.env` with your credentials. `BALANCE_FOLDER` should point to the
 # folder inside your Obsidian vault where balances are stored, e.g.
 # `BALANCE_FOLDER=Trading/Balances/KuCoin`
 
-📈 Usage
+
 Log today’s balance:
-bash
-Copy
-Edit
+
+```bash
 python start.py
+```
+
 Backfill a past date:
-bash
-Copy
-Edit
+
+```bash
 python start.py --date 2025-08-01
+```
+
 Markdown files are saved to your vault as:
 
-markdown
-Copy
-Edit
+```markdown
 ---
 date: 2025-08-02
 balance: 111.15
 ---
-📊 Obsidian Integration
-Dataview Table (last 7 days)
-markdown
-Copy
-Edit
+
+## 📊 Obsidian Integration
+
+### Dataview Table (last 7 days)
+
 ```dataview
 table date, balance
 from "Trading/Balances/KuCoin"
 sort date desc
 limit 7
-go
-Copy
-Edit
+```
 
 ### Line Chart (DataviewJS + Obsidian Charts)
 
-```markdown
 ```dataviewjs
 const pages = dv.pages('"Trading/Balances/KuCoin"')
   .where(p => p.date && p.balance)
@@ -87,16 +85,16 @@ dv.paragraph([
   "series:",
   "  - title: Balance",
   `    data: [${data.join(", ")}]`,
-  "```"
+  "```",
 ].join("\n"));
-yaml
-Copy
-Edit
+```
 
 ---
+
 ## QUICK TIPS
 
-Add  ![[Trading/Charts/BalanceChart]] to any Obsidian note to produce your balance sheet.
+Add `![[Trading/Charts/BalanceChart]]` to any Obsidian note to produce your balance sheet.
+
 ## 🛡 Security
 
 - `.env` is excluded via `.gitignore`
