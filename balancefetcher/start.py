@@ -6,8 +6,16 @@ import time
 import os
 import json
 import argparse
+import logging
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+
+# === Logging ===
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # === Load config ===
 load_dotenv()
@@ -61,7 +69,7 @@ def read_previous_balance(date_str: str):
     prev_date = (datetime.strptime(date_str, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
     file_path = os.path.join(vault_path, balance_folder, f"{prev_date}.md")
     if not os.path.exists(file_path):
-        print(f"🆕 No data for {prev_date} — creating placeholder.")
+        logger.info("🆕 No data for %s — creating placeholder.", prev_date)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "w") as f:
             f.write(f"---\ndate: {prev_date}\nbalance: 0.00\n---\n")
@@ -81,7 +89,7 @@ def write_balance(date_str: str, balance: float):
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "w") as f:
         f.write(f"---\ndate: {date_str}\nbalance: {balance:.2f}\n---\n")
-    print(f"✅ Logged balance for {date_str}: {balance:.2f}")
+    logger.info("✅ Logged balance for %s: %.2f", date_str, balance)
 
 # === Cache control ===
 def already_logged(date_str: str) -> bool:
@@ -105,7 +113,7 @@ def mark_logged(date_str: str):
 # === Main ===
 if __name__ == "__main__":
     if already_logged(target_date):
-        print("🟡 Already logged today — skipping.")
+        logger.warning("🟡 Already logged today — skipping.")
         exit(0)
 
     try:
@@ -117,8 +125,13 @@ if __name__ == "__main__":
         change = balance - previous_balance
         pct = (change / previous_balance) * 100 if previous_balance != 0 else 0
         symbol = "📈" if change > 0 else "📉" if change < 0 else "🔁"
-        print(f"{symbol} Change since previous day: {change:+.2f} ({pct:+.2f}%)")
+        logger.info(
+            "%s Change since previous day: %+0.2f (%+0.2f%%)",
+            symbol,
+            change,
+            pct,
+        )
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.exception("❌ Error: %s", e)
 
