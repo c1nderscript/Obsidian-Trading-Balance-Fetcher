@@ -27,6 +27,8 @@ vault_path = ""
 balance_folder = "Trading/Balances/KuCoin"
 cache_file = os.path.expanduser("~/.kucoin_balance_log.json")
 api_timeout = 10.0
+api_max_retries = 3
+api_retry_wait = 1.0
 today: Optional[str] = None
 
 # === KuCoin auth ===
@@ -82,9 +84,24 @@ def fetch_futures_balance(currency: str = "USDT") -> float:
     endpoint = f"/api/v1/account-overview?currency={currency}"
     url = "https://api-futures.kucoin.com" + endpoint
     headers = kucoin_futures_headers(endpoint)
-    res = requests.get(url, headers=headers, timeout=api_timeout)
-    res.raise_for_status()
-    return float(res.json()["data"]["accountEquity"])
+
+    for attempt in range(1, api_max_retries + 1):
+        try:
+            res = requests.get(url, headers=headers, timeout=api_timeout)
+            res.raise_for_status()
+            return float(res.json()["data"]["accountEquity"])
+        except requests.exceptions.RequestException as e:
+            if attempt < api_max_retries:
+                logger.warning(
+                    "Request failed (attempt %s/%s): %s",
+                    attempt,
+                    api_max_retries,
+                    e,
+                )
+                time.sleep(api_retry_wait)
+            else:
+                logger.error("Failed to fetch balance after %s attempts: %s", api_max_retries, e)
+                raise RuntimeError(f"Failed to fetch balance: {e}") from e
 
 # === Read previous day's balance ===
 def read_previous_balance(date_str: str) -> float:
@@ -181,7 +198,7 @@ def main(argv: Optional[list[str]] = None) -> None:
     """
 
     global api_key, api_secret, api_passphrase, currency, vault_path
-    global balance_folder, cache_file, api_timeout, today
+    global balance_folder, cache_file, api_timeout, api_max_retries, api_retry_wait, today
 
     load_dotenv()
 
@@ -197,6 +214,8 @@ def main(argv: Optional[list[str]] = None) -> None:
     balance_folder = os.getenv("BALANCE_FOLDER", "Trading/Balances/KuCoin")
     cache_file = os.path.expanduser("~/.kucoin_balance_log.json")
     api_timeout = float(os.getenv("KUCOIN_API_TIMEOUT", "10"))
+    api_max_retries = int(os.getenv("KUCOIN_API_MAX_RETRIES", "3"))
+    api_retry_wait = float(os.getenv("KUCOIN_API_RETRY_WAIT", "1"))
 
     required_env = {
         "KUCOIN_API_KEY": api_key,

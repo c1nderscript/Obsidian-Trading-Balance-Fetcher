@@ -3,6 +3,8 @@ import sys
 from pathlib import Path
 import importlib.util
 import logging
+import requests
+import pytest
 
 # Ensure required env vars exist before importing module
 os.environ.setdefault("KUCOIN_API_KEY", "testkey")
@@ -33,6 +35,42 @@ def test_fetch_futures_balance(monkeypatch):
 
     monkeypatch.setattr(start.requests, "get", mock_get)
     assert start.fetch_futures_balance("USDT") == 123.45
+
+
+def test_fetch_futures_balance_retries(monkeypatch):
+    class MockResponse:
+        def json(self):
+            return {"data": {"accountEquity": "123.45"}}
+
+        def raise_for_status(self):
+            pass
+
+    attempts = {"n": 0}
+
+    def mock_get(url, headers, timeout=None):
+        attempts["n"] += 1
+        if attempts["n"] < 3:
+            raise requests.exceptions.ConnectionError("boom")
+        return MockResponse()
+
+    monkeypatch.setattr(start.requests, "get", mock_get)
+    monkeypatch.setattr(start, "api_max_retries", 3)
+    monkeypatch.setattr(start, "api_retry_wait", 0)
+    monkeypatch.setattr(start.time, "sleep", lambda s: None)
+    assert start.fetch_futures_balance("USDT") == 123.45
+    assert attempts["n"] == 3
+
+
+def test_fetch_futures_balance_retries_fail(monkeypatch):
+    def mock_get(url, headers, timeout=None):
+        raise requests.exceptions.Timeout("timeout")
+
+    monkeypatch.setattr(start.requests, "get", mock_get)
+    monkeypatch.setattr(start, "api_max_retries", 2)
+    monkeypatch.setattr(start, "api_retry_wait", 0)
+    monkeypatch.setattr(start.time, "sleep", lambda s: None)
+    with pytest.raises(RuntimeError):
+        start.fetch_futures_balance("USDT")
 
 
 def test_write_and_read_balance(tmp_path, monkeypatch):
