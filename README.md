@@ -93,7 +93,20 @@ dv.paragraph([
 
 ## QUICK TIPS
 
+
+Add  ![[Trading/Charts/BalanceChart]] to any Obsidian note to produce your balance sheet.
+
+## 🧪 Testing
+
+Run the test suite with:
+
+```bash
+pip install -r balancefetcher/requirements.txt
+pytest
+```
+
 Add `![[Trading/Charts/BalanceChart]]` to any Obsidian note to produce your balance sheet.
+
 
 ## 🛡 Security
 
