@@ -93,6 +93,16 @@ Edit
 ## QUICK TIPS
 
 Add  ![[Trading/Charts/BalanceChart]] to any Obsidian note to produce your balance sheet.
+
+## 🧪 Testing
+
+Run the test suite with:
+
+```bash
+pip install -r balancefetcher/requirements.txt
+pytest
+```
+
 ## 🛡 Security
 
 - `.env` is excluded via `.gitignore`
