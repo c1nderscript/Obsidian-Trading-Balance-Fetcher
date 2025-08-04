@@ -30,8 +30,12 @@ git clone https://github.com/c1nderscript/Obsidian-Trading-Balance-Fetcher.git
 cd Obsidian-Trading-Balance-Fetcher
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r balancefetcher/requirements.txt
+pip install -r requirements.txt
 cp .env.example .env
+
+# Install development dependencies if you plan to run tests
+# (includes runtime requirements automatically)
+pip install -r requirements-dev.txt
 ```
 
 Update `.env` with your credentials. `BALANCE_FOLDER` should point to the
@@ -102,7 +106,7 @@ Add ![[Trading/Charts/BalanceChart]] to any Obsidian note to show your balance c
 Run the test suite with:
 
 ```bash
-pip install -r balancefetcher/requirements.txt
+pip install -r requirements-dev.txt
 pytest
 ```
 
