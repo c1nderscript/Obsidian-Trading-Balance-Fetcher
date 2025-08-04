@@ -29,24 +29,24 @@ git clone https://github.com/c1nderscript/Obsidian-Trading-Balance-Fetcher.git
 cd Obsidian-Trading-Balance-Fetcher
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r balancefetcher/requirements.txt
 cp .env.example .env
+```
 
-# Update `.env` with your credentials. `BALANCE_FOLDER` should point to the
-# folder inside your Obsidian vault where balances are stored, e.g.
-# `BALANCE_FOLDER=Trading/Balances/KuCoin`
-
+Update `.env` with your credentials. `BALANCE_FOLDER` should point to the
+folder inside your Obsidian vault where balances are stored, e.g.
+`BALANCE_FOLDER=Trading/Balances/KuCoin`
 
 Log today’s balance:
 
 ```bash
-python start.py
+python balancefetcher/start.py
 ```
 
 Backfill a past date:
 
 ```bash
-python start.py --date 2025-08-01
+python balancefetcher/start.py --date 2025-08-01
 ```
 
 Markdown files are saved to your vault as:
@@ -56,6 +56,7 @@ Markdown files are saved to your vault as:
 date: 2025-08-02
 balance: 111.15
 ---
+```
 
 ## 📊 Obsidian Integration
 
@@ -91,10 +92,9 @@ dv.paragraph([
 
 ---
 
-## QUICK TIPS
+## 💡 Quick Tips
 
-
-Add  ![[Trading/Charts/BalanceChart]] to any Obsidian note to produce your balance sheet.
+Add ![[Trading/Charts/BalanceChart]] to any Obsidian note to show your balance chart.
 
 ## 🧪 Testing
 
@@ -104,9 +104,6 @@ Run the test suite with:
 pip install -r balancefetcher/requirements.txt
 pytest
 ```
-
-Add `![[Trading/Charts/BalanceChart]]` to any Obsidian note to produce your balance sheet.
-
 
 ## 🛡 Security
 

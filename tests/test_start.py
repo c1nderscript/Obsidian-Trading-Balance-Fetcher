@@ -27,7 +27,7 @@ def test_fetch_futures_balance(monkeypatch):
         def raise_for_status(self):
             pass
 
-    def mock_get(url, headers):
+    def mock_get(url, headers, timeout=None):
         return MockResponse()
 
     monkeypatch.setattr(start.requests, "get", mock_get)
