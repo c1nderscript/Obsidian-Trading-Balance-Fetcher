@@ -10,6 +10,7 @@ import logging
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import yaml
+from typing import Optional
 
 # === Logging ===
 logging.basicConfig(
@@ -26,10 +27,26 @@ vault_path = ""
 balance_folder = "Trading/Balances/KuCoin"
 cache_file = os.path.expanduser("~/.kucoin_balance_log.json")
 api_timeout = 10.0
-today = None
+today: Optional[str] = None
 
 # === KuCoin auth ===
-def kucoin_futures_headers(endpoint, method="GET"):
+def kucoin_futures_headers(endpoint: str, method: str = "GET") -> dict[str, str]:
+    """Create authenticated headers for the KuCoin Futures API.
+
+    Parameters
+    ----------
+    endpoint:
+        The API path being requested.
+    method:
+        HTTP method used for the request. Defaults to ``"GET"``.
+
+    Returns
+    -------
+    dict[str, str]
+        A dictionary of headers containing the API key, signature and
+        other required authentication fields.
+    """
+
     now = str(int(time.time() * 1000))
     str_to_sign = f"{now}{method}{endpoint}"
     signature = base64.b64encode(
@@ -44,11 +61,24 @@ def kucoin_futures_headers(endpoint, method="GET"):
         "KC-API-TIMESTAMP": now,
         "KC-API-PASSPHRASE": passphrase,
         "KC-API-KEY-VERSION": "2",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
 # === Fetch balance from KuCoin Futures ===
-def fetch_futures_balance(currency="USDT"):
+def fetch_futures_balance(currency: str = "USDT") -> float:
+    """Retrieve the current futures account equity for ``currency``.
+
+    Parameters
+    ----------
+    currency:
+        Currency symbol to query. Defaults to ``"USDT"``.
+
+    Returns
+    -------
+    float
+        The account equity reported by KuCoin.
+    """
+
     endpoint = f"/api/v1/account-overview?currency={currency}"
     url = "https://api-futures.kucoin.com" + endpoint
     headers = kucoin_futures_headers(endpoint)
@@ -57,7 +87,23 @@ def fetch_futures_balance(currency="USDT"):
     return float(res.json()["data"]["accountEquity"])
 
 # === Read previous day's balance ===
-def read_previous_balance(date_str: str):
+def read_previous_balance(date_str: str) -> float:
+    """Read the balance for the day before ``date_str`` from the vault.
+
+    If no file exists for the previous day, a placeholder file is created
+    with a balance of ``0.00``.
+
+    Parameters
+    ----------
+    date_str:
+        Target date in ``YYYY-MM-DD`` format.
+
+    Returns
+    -------
+    float
+        The balance recorded for the previous day or ``0.00`` if missing.
+    """
+
     prev_date = (datetime.strptime(date_str, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
     file_path = os.path.join(vault_path, balance_folder, f"{prev_date}.md")
     if not os.path.exists(file_path):
@@ -80,7 +126,9 @@ def read_previous_balance(date_str: str):
             return 0.00
 
 # === Write balance for a specific date ===
-def write_balance(date_str: str, balance: float):
+def write_balance(date_str: str, balance: float) -> None:
+    """Write ``balance`` for ``date_str`` to the vault markdown file."""
+
     file_path = os.path.join(vault_path, balance_folder, f"{date_str}.md")
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "w") as f:
@@ -89,6 +137,8 @@ def write_balance(date_str: str, balance: float):
 
 # === Cache control ===
 def already_logged(date_str: str) -> bool:
+    """Return ``True`` if ``date_str`` has already been logged today."""
+
     if date_str != today:
         return False
     if not os.path.exists(cache_file):
@@ -97,10 +147,12 @@ def already_logged(date_str: str) -> bool:
         with open(cache_file, "r") as f:
             data = json.load(f)
         return data.get("last_logged_date") == date_str
-    except:
+    except Exception:
         return False
 
-def mark_logged(date_str: str):
+def mark_logged(date_str: str) -> None:
+    """Record in the cache file that ``date_str`` has been logged."""
+
     if date_str != today:
         return
     with open(cache_file, "w") as f:
@@ -108,7 +160,9 @@ def mark_logged(date_str: str):
  
 
 # === Main ===
-def main():
+def main() -> None:
+    """Command line entry point for balance logging."""
+
     global api_key, api_secret, api_passphrase, currency, vault_path
     global balance_folder, cache_file, api_timeout, today
 
