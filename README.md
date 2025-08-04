@@ -30,6 +30,9 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
+# Update `.env` with your credentials. `BALANCE_FOLDER` should point to the
+# folder inside your Obsidian vault where balances are stored, e.g.
+# `BALANCE_FOLDER=Trading/Balances/KuCoin`
 
 📈 Usage
 Log today’s balance:
