@@ -29,16 +29,14 @@ You'll see your prompt change to something like:
 ## 4. Install required dependencies
 
 ```bash
-pip install python-dotenv requests
+pip install -r requirements.txt
 ```
 
-## 5. Freeze the dependencies (optional but good practice)
+## 5. (Optional) Install development dependencies
 
 ```bash
-pip freeze > requirements.txt
+pip install -r requirements-dev.txt
 ```
-
-Now you have a reproducible environment.
 
 ## 6. Run your script inside the venv
 
