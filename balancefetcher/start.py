@@ -6,8 +6,17 @@ import time
 import os
 import json
 import argparse
+import logging
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import yaml
+
+# === Logging ===
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # === Load config ===
 load_dotenv()
@@ -17,8 +26,22 @@ api_secret = os.getenv("KUCOIN_API_SECRET")
 api_passphrase = os.getenv("KUCOIN_API_PASSPHRASE")
 currency = os.getenv("KUCOIN_BALANCE_CURRENCY", "USDT")
 vault_path = os.getenv("OBSIDIAN_VAULT_PATH")
-balance_folder = "Trading/Balances/KuCoin"
+balance_folder = os.getenv("BALANCE_FOLDER", "Trading/Balances/KuCoin")
 cache_file = os.path.expanduser("~/.kucoin_balance_log.json")
+api_timeout = float(os.getenv("KUCOIN_API_TIMEOUT", "10"))
+
+# Ensure all required environment variables are present
+required_env = {
+    "KUCOIN_API_KEY": api_key,
+    "KUCOIN_API_SECRET": api_secret,
+    "KUCOIN_API_PASSPHRASE": api_passphrase,
+    "OBSIDIAN_VAULT_PATH": vault_path,
+}
+missing = [name for name, value in required_env.items() if not value]
+if missing:
+    raise SystemExit(
+        f"Missing required environment variables: {', '.join(missing)}"
+    )
 
 # === CLI args ===
 parser = argparse.ArgumentParser()
@@ -52,7 +75,7 @@ def fetch_futures_balance(currency="USDT"):
     endpoint = f"/api/v1/account-overview?currency={currency}"
     url = "https://api-futures.kucoin.com" + endpoint
     headers = kucoin_futures_headers(endpoint)
-    res = requests.get(url, headers=headers)
+    res = requests.get(url, headers=headers, timeout=api_timeout)
     res.raise_for_status()
     return float(res.json()["data"]["accountEquity"])
 
@@ -61,19 +84,23 @@ def read_previous_balance(date_str: str):
     prev_date = (datetime.strptime(date_str, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
     file_path = os.path.join(vault_path, balance_folder, f"{prev_date}.md")
     if not os.path.exists(file_path):
-        print(f"🆕 No data for {prev_date} — creating placeholder.")
+        logger.info("🆕 No data for %s — creating placeholder.", prev_date)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "w") as f:
             f.write(f"---\ndate: {prev_date}\nbalance: 0.00\n---\n")
         return 0.00
     with open(file_path, "r") as f:
-        for line in f:
-            if line.strip().startswith("balance:"):
-                try:
-                    return float(line.split(":")[1].strip())
-                except:
-                    return 0.00
-    return 0.00
+        try:
+            content = f.read()
+            if content.startswith("---"):
+                parts = content.split("---", 2)
+                yaml_content = parts[1] if len(parts) > 1 else content
+            else:
+                yaml_content = content
+            data = yaml.safe_load(yaml_content) or {}
+            return float(data.get("balance", 0.00))
+        except Exception:
+            return 0.00
 
 # === Write balance for a specific date ===
 def write_balance(date_str: str, balance: float):
@@ -81,7 +108,7 @@ def write_balance(date_str: str, balance: float):
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "w") as f:
         f.write(f"---\ndate: {date_str}\nbalance: {balance:.2f}\n---\n")
-    print(f"✅ Logged balance for {date_str}: {balance:.2f}")
+    logger.info("✅ Logged balance for %s: %.2f", date_str, balance)
 
 # === Cache control ===
 def already_logged(date_str: str) -> bool:
@@ -105,7 +132,7 @@ def mark_logged(date_str: str):
 # === Main ===
 if __name__ == "__main__":
     if already_logged(target_date):
-        print("🟡 Already logged today — skipping.")
+        logger.warning("🟡 Already logged today — skipping.")
         exit(0)
 
     try:
@@ -117,8 +144,13 @@ if __name__ == "__main__":
         change = balance - previous_balance
         pct = (change / previous_balance) * 100 if previous_balance != 0 else 0
         symbol = "📈" if change > 0 else "📉" if change < 0 else "🔁"
-        print(f"{symbol} Change since previous day: {change:+.2f} ({pct:+.2f}%)")
+        logger.info(
+            "%s Change since previous day: %+0.2f (%+0.2f%%)",
+            symbol,
+            change,
+            pct,
+        )
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.exception("❌ Error: %s", e)
 
