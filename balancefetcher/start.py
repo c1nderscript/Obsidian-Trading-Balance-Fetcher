@@ -113,17 +113,21 @@ def read_previous_balance(date_str: str) -> float:
             f.write(f"---\ndate: {prev_date}\nbalance: 0.00\n---\n")
         return 0.00
     with open(file_path, "r") as f:
-        try:
-            content = f.read()
-            if content.startswith("---"):
-                parts = content.split("---", 2)
-                yaml_content = parts[1] if len(parts) > 1 else content
-            else:
-                yaml_content = content
-            data = yaml.safe_load(yaml_content) or {}
-            return float(data.get("balance", 0.00))
-        except Exception:
-            return 0.00
+        content = f.read()
+    try:
+        if content.startswith("---"):
+            parts = content.split("---", 2)
+            yaml_content = parts[1] if len(parts) > 1 else content
+        else:
+            yaml_content = content
+        data = yaml.safe_load(yaml_content) or {}
+        return float(data.get("balance", 0.00))
+    except (yaml.YAMLError, ValueError, TypeError, AttributeError) as e:
+        logger.warning("Failed to parse balance file %s: %s", file_path, e)
+        return 0.00
+    except Exception as e:
+        logger.exception("Unexpected error reading balance file %s: %s", file_path, e)
+        raise
 
 # === Write balance for a specific date ===
 def write_balance(date_str: str, balance: float) -> None:
@@ -147,8 +151,12 @@ def already_logged(date_str: str) -> bool:
         with open(cache_file, "r") as f:
             data = json.load(f)
         return data.get("last_logged_date") == date_str
-    except Exception:
+    except (OSError, json.JSONDecodeError, AttributeError) as e:
+        logger.warning("Failed to read cache file %s: %s", cache_file, e)
         return False
+    except Exception as e:
+        logger.exception("Unexpected error accessing cache file %s: %s", cache_file, e)
+        raise
 
 def mark_logged(date_str: str) -> None:
     """Record in the cache file that ``date_str`` has been logged."""
@@ -226,6 +234,7 @@ def main(argv: Optional[list[str]] = None) -> None:
         )
     except Exception as e:
         logger.exception("❌ Error: %s", e)
+        raise
 
 
 if __name__ == "__main__":

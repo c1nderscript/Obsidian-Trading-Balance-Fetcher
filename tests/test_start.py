@@ -2,6 +2,7 @@ import os
 import sys
 from pathlib import Path
 import importlib.util
+import logging
 
 # Ensure required env vars exist before importing module
 os.environ.setdefault("KUCOIN_API_KEY", "testkey")
@@ -61,3 +62,25 @@ def test_mark_and_already_logged(tmp_path, monkeypatch):
     assert not start.already_logged("2024-01-01")
     start.mark_logged("2024-01-01")
     assert start.already_logged("2024-01-01")
+
+
+def test_read_previous_balance_invalid_yaml(tmp_path, monkeypatch, caplog):
+    monkeypatch.setattr(start, "vault_path", str(tmp_path))
+    prev_date = "2024-01-01"
+    file_path = tmp_path / start.balance_folder / f"{prev_date}.md"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text("---\n::not_yaml")
+    with caplog.at_level(logging.WARNING):
+        balance = start.read_previous_balance("2024-01-02")
+    assert balance == 0.0
+    assert "Failed to parse balance file" in caplog.text
+
+
+def test_already_logged_invalid_json(tmp_path, monkeypatch, caplog):
+    cache_file = tmp_path / "cache.json"
+    cache_file.write_text("not-json")
+    monkeypatch.setattr(start, "cache_file", str(cache_file))
+    monkeypatch.setattr(start, "today", "2024-01-01")
+    with caplog.at_level(logging.WARNING):
+        assert not start.already_logged("2024-01-01")
+    assert "Failed to read cache file" in caplog.text
