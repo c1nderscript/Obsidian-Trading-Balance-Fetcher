@@ -17,7 +17,7 @@ api_secret = os.getenv("KUCOIN_API_SECRET")
 api_passphrase = os.getenv("KUCOIN_API_PASSPHRASE")
 currency = os.getenv("KUCOIN_BALANCE_CURRENCY", "USDT")
 vault_path = os.getenv("OBSIDIAN_VAULT_PATH")
-balance_folder = "Trading/Balances/KuCoin"
+balance_folder = os.getenv("BALANCE_FOLDER", "Trading/Balances/KuCoin")
 cache_file = os.path.expanduser("~/.kucoin_balance_log.json")
 
 # === CLI args ===
