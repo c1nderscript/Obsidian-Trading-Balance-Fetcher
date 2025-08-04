@@ -9,6 +9,7 @@ import argparse
 import logging
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import yaml
 
 # === Logging ===
 logging.basicConfig(
@@ -89,13 +90,17 @@ def read_previous_balance(date_str: str):
             f.write(f"---\ndate: {prev_date}\nbalance: 0.00\n---\n")
         return 0.00
     with open(file_path, "r") as f:
-        for line in f:
-            if line.strip().startswith("balance:"):
-                try:
-                    return float(line.split(":")[1].strip())
-                except:
-                    return 0.00
-    return 0.00
+        try:
+            content = f.read()
+            if content.startswith("---"):
+                parts = content.split("---", 2)
+                yaml_content = parts[1] if len(parts) > 1 else content
+            else:
+                yaml_content = content
+            data = yaml.safe_load(yaml_content) or {}
+            return float(data.get("balance", 0.00))
+        except Exception:
+            return 0.00
 
 # === Write balance for a specific date ===
 def write_balance(date_str: str, balance: float):
