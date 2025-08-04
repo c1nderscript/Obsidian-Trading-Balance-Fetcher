@@ -29,6 +29,19 @@ balance_folder = os.getenv("BALANCE_FOLDER", "Trading/Balances/KuCoin")
 cache_file = os.path.expanduser("~/.kucoin_balance_log.json")
 api_timeout = float(os.getenv("KUCOIN_API_TIMEOUT", "10"))
 
+# Ensure all required environment variables are present
+required_env = {
+    "KUCOIN_API_KEY": api_key,
+    "KUCOIN_API_SECRET": api_secret,
+    "KUCOIN_API_PASSPHRASE": api_passphrase,
+    "OBSIDIAN_VAULT_PATH": vault_path,
+}
+missing = [name for name, value in required_env.items() if not value]
+if missing:
+    raise SystemExit(
+        f"Missing required environment variables: {', '.join(missing)}"
+    )
+
 # === CLI args ===
 parser = argparse.ArgumentParser()
 parser.add_argument("--date", help="Override date for backfill (YYYY-MM-DD)")
