@@ -127,28 +127,34 @@ def fetch_futures_balance(config: Config) -> float:
     endpoint = f"/api/v1/account-overview?currency={config.currency}"
     url = "https://api-futures.kucoin.com" + endpoint
     headers = kucoin_futures_headers(config, endpoint)
-
-    for attempt in range(1, config.api_max_retries + 1):
-        try:
-            res = requests.get(url, headers=headers, timeout=config.api_timeout)
-            res.raise_for_status()
-            return float(res.json()["data"]["accountEquity"])
-        except requests.exceptions.RequestException as e:
-            if attempt < config.api_max_retries:
-                logger.warning(
-                    "Request failed (attempt %s/%s): %s",
-                    attempt,
-                    config.api_max_retries,
-                    e,
-                )
-                time.sleep(config.api_retry_wait)
-            else:
-                logger.error(
-                    "Failed to fetch balance after %s attempts: %s",
-                    config.api_max_retries,
-                    e,
-                )
-                raise RuntimeError(f"Failed to fetch balance: {e}") from e
+    with requests.Session() as session:
+        for attempt in range(1, config.api_max_retries + 1):
+            try:
+                res = session.get(url, headers=headers, timeout=config.api_timeout)
+                res.raise_for_status()
+                try:
+                    data = res.json()
+                    return float(data["data"]["accountEquity"])
+                except (json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
+                    logger.error("Failed to parse JSON response: %s", e)
+                    raise RuntimeError(f"Failed to parse JSON: {e}") from e
+            except requests.exceptions.RequestException as e:
+                if attempt < config.api_max_retries:
+                    wait_time = config.api_retry_wait * (2 ** (attempt - 1))
+                    logger.warning(
+                        "Request failed (attempt %s/%s): %s",
+                        attempt,
+                        config.api_max_retries,
+                        e,
+                    )
+                    time.sleep(wait_time)
+                else:
+                    logger.error(
+                        "Failed to fetch balance after %s attempts: %s",
+                        config.api_max_retries,
+                        e,
+                    )
+                    raise RuntimeError(f"Failed to fetch balance: {e}") from e
 
 
 # ---------------------------------------------------------------------------
