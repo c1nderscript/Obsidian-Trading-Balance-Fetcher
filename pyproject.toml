@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "obsidian-trading-balance-fetcher"
+version = "0.1.0"
+description = "Fetches KuCoin Futures account balances and logs them to Obsidian."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [{ name = "c1nderscript" }]
+dependencies = [
+    "python-dotenv>=1.0",
+    "pyyaml>=6.0",
+    "requests>=2.31",
+]
+
+[project.scripts]
+balancefetcher = "balancefetcher.start:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.urls]
+Homepage = "https://github.com/c1nderscript/Obsidian-Trading-Balance-Fetcher"
+
+[tool.hatch.build.targets.wheel]
+packages = ["balancefetcher"]
