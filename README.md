@@ -115,10 +115,11 @@ Add ![[Trading/Charts/BalanceChart]] to any Obsidian note to show your balance c
 
 ## 🧪 Testing
 
-Run the test suite with:
+Run linters and the test suite with:
 
 ```bash
 pip install -r requirements-dev.txt
+pre-commit run --all-files
 pytest
 ```
 

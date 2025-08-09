@@ -43,9 +43,7 @@ class Config:
     api_timeout: float = 10.0
     api_max_retries: int = 3
     api_retry_wait: float = 1.0
-    today: str = field(
-        default_factory=lambda: datetime.today().strftime("%Y-%m-%d")
-    )
+    today: str = field(default_factory=lambda: datetime.today().strftime("%Y-%m-%d"))
 
 
 logger = logging.getLogger(__name__)
@@ -54,7 +52,9 @@ logger = logging.getLogger(__name__)
 def setup_logging() -> None:
     """Configure application wide logging."""
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s"
+    )
 
 
 def load_config() -> Config:
@@ -105,16 +105,22 @@ def load_config() -> Config:
 # ---------------------------------------------------------------------------
 
 
-def kucoin_futures_headers(config: Config, endpoint: str, method: str = "GET") -> dict[str, str]:
+def kucoin_futures_headers(
+    config: Config, endpoint: str, method: str = "GET"
+) -> dict[str, str]:
     """Create authenticated headers for the KuCoin Futures API."""
 
     now = str(int(time.time() * 1000))
     str_to_sign = f"{now}{method}{endpoint}"
     signature = base64.b64encode(
-        hmac.new(config.api_secret.encode(), str_to_sign.encode(), hashlib.sha256).digest()
+        hmac.new(
+            config.api_secret.encode(), str_to_sign.encode(), hashlib.sha256
+        ).digest()
     ).decode()
     passphrase = base64.b64encode(
-        hmac.new(config.api_secret.encode(), config.api_passphrase.encode(), hashlib.sha256).digest()
+        hmac.new(
+            config.api_secret.encode(), config.api_passphrase.encode(), hashlib.sha256
+        ).digest()
     ).decode()
     return {
         "KC-API-KEY": config.api_key,
@@ -170,8 +176,12 @@ def fetch_futures_balance(config: Config) -> float:
 def read_previous_balance(config: Config, date_str: str) -> float:
     """Read the balance for the day before ``date_str`` from the vault."""
 
-    prev_date = (datetime.strptime(date_str, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
-    file_path = os.path.join(config.vault_path, config.balance_folder, f"{prev_date}.md")
+    prev_date = (datetime.strptime(date_str, "%Y-%m-%d") - timedelta(days=1)).strftime(
+        "%Y-%m-%d"
+    )
+    file_path = os.path.join(
+        config.vault_path, config.balance_folder, f"{prev_date}.md"
+    )
     if not os.path.exists(file_path):
         logger.info("🆕 No data for %s — creating placeholder.", prev_date)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -295,4 +305,3 @@ def main(argv: Optional[list[str]] = None) -> None:
 
 if __name__ == "__main__":  # pragma: no cover - CLI entry point
     main()
-
