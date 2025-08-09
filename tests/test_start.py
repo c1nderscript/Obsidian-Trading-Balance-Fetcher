@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 import importlib.util
 import logging
+import json
 import requests
 import pytest
 
@@ -35,10 +36,17 @@ def test_fetch_futures_balance(monkeypatch, config):
         def raise_for_status(self):
             pass
 
-    def mock_get(url, headers, timeout=None):
-        return MockResponse()
+    class MockSession:
+        def __enter__(self):
+            return self
 
-    monkeypatch.setattr(start.requests, "get", mock_get)
+        def __exit__(self, exc_type, exc, tb):
+            pass
+
+        def get(self, url, headers=None, timeout=None):
+            return MockResponse()
+
+    monkeypatch.setattr(start.requests, "Session", lambda: MockSession())
     assert start.fetch_futures_balance(config) == 123.45
 
 
@@ -50,30 +58,71 @@ def test_fetch_futures_balance_retries(monkeypatch, config):
         def raise_for_status(self):
             pass
 
-    attempts = {"n": 0}
+    class MockSession:
+        def __init__(self):
+            self.calls = 0
 
-    def mock_get(url, headers, timeout=None):
-        attempts["n"] += 1
-        if attempts["n"] < 3:
-            raise requests.exceptions.ConnectionError("boom")
-        return MockResponse()
+        def __enter__(self):
+            return self
 
-    monkeypatch.setattr(start.requests, "get", mock_get)
+        def __exit__(self, exc_type, exc, tb):
+            pass
+
+        def get(self, url, headers=None, timeout=None):
+            self.calls += 1
+            if self.calls < 3:
+                raise requests.exceptions.ConnectionError("boom")
+            return MockResponse()
+
+    session = MockSession()
+    monkeypatch.setattr(start.requests, "Session", lambda: session)
     config.api_max_retries = 3
-    config.api_retry_wait = 0
-    monkeypatch.setattr(start.time, "sleep", lambda s: None)
+    config.api_retry_wait = 1
+    waits = []
+    monkeypatch.setattr(start.time, "sleep", lambda s: waits.append(s))
     assert start.fetch_futures_balance(config) == 123.45
-    assert attempts["n"] == 3
+    assert session.calls == 3
+    assert waits == [1, 2]
 
 
 def test_fetch_futures_balance_retries_fail(monkeypatch, config):
-    def mock_get(url, headers, timeout=None):
-        raise requests.exceptions.Timeout("timeout")
+    class MockSession:
+        def __enter__(self):
+            return self
 
-    monkeypatch.setattr(start.requests, "get", mock_get)
+        def __exit__(self, exc_type, exc, tb):
+            pass
+
+        def get(self, url, headers=None, timeout=None):
+            raise requests.exceptions.Timeout("timeout")
+
+    monkeypatch.setattr(start.requests, "Session", lambda: MockSession())
     config.api_max_retries = 2
     config.api_retry_wait = 0
     monkeypatch.setattr(start.time, "sleep", lambda s: None)
+    with pytest.raises(RuntimeError):
+        start.fetch_futures_balance(config)
+
+
+def test_fetch_futures_balance_invalid_json(monkeypatch, config):
+    class MockResponse:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            raise json.JSONDecodeError("msg", "doc", 0)
+
+    class MockSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            pass
+
+        def get(self, url, headers=None, timeout=None):
+            return MockResponse()
+
+    monkeypatch.setattr(start.requests, "Session", lambda: MockSession())
     with pytest.raises(RuntimeError):
         start.fetch_futures_balance(config)
 
