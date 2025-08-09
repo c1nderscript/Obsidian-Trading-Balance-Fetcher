@@ -18,6 +18,7 @@ from filelock import FileLock
 
 import requests
 import yaml
+import frontmatter
 from dotenv import load_dotenv
 
 
@@ -180,13 +181,10 @@ def read_previous_balance(config: Config, date_str: str) -> float:
     with open(file_path, "r") as f:
         content = f.read()
     try:
-        if content.startswith("---"):
-            parts = content.split("---", 2)
-            yaml_content = parts[1] if len(parts) > 1 else content
-        else:
-            yaml_content = content
-        data = yaml.safe_load(yaml_content) or {}
-        return float(data.get("balance", 0.00))
+        post = frontmatter.loads(content)
+        if not post.metadata:
+            raise yaml.YAMLError("missing or malformed front matter")
+        return float(post.metadata.get("balance", 0.00))
     except (yaml.YAMLError, ValueError, TypeError, AttributeError) as e:
         logger.warning("Failed to parse balance file %s: %s", file_path, e)
         return 0.00

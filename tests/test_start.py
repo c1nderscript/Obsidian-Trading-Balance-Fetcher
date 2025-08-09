@@ -173,7 +173,29 @@ def test_read_previous_balance_invalid_yaml(config, tmp_path, caplog):
     prev_date = "2024-01-01"
     file_path = tmp_path / config.balance_folder / f"{prev_date}.md"
     file_path.parent.mkdir(parents=True, exist_ok=True)
-    file_path.write_text("---\n::not_yaml")
+    file_path.write_text("---\n: not_yaml\n---\n")
+    with caplog.at_level(logging.WARNING):
+        balance = start.read_previous_balance(config, "2024-01-02")
+    assert balance == 0.0
+    assert "Failed to parse balance file" in caplog.text
+
+
+def test_read_previous_balance_missing_closing_delimiter(config, tmp_path, caplog):
+    prev_date = "2024-01-01"
+    file_path = tmp_path / config.balance_folder / f"{prev_date}.md"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text("---\ndate: 2024-01-01\nbalance: 1.23")
+    with caplog.at_level(logging.WARNING):
+        balance = start.read_previous_balance(config, "2024-01-02")
+    assert balance == 0.0
+    assert "Failed to parse balance file" in caplog.text
+
+
+def test_read_previous_balance_no_front_matter(config, tmp_path, caplog):
+    prev_date = "2024-01-01"
+    file_path = tmp_path / config.balance_folder / f"{prev_date}.md"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text("date: 2024-01-01\nbalance: 1.23\n")
     with caplog.at_level(logging.WARNING):
         balance = start.read_previous_balance(config, "2024-01-02")
     assert balance == 0.0
