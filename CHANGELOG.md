@@ -3,6 +3,10 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+## [0.2.2] - 2025-08-09
+### Added
+- Integration test covering `start.main()` balance logging and cache behavior.
+
 ## [0.2.1] - 2025-08-09
 ### Changed
 - Use `python-frontmatter` to parse vault front matter.
