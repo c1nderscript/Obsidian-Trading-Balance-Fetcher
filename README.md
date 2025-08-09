@@ -16,6 +16,7 @@ Fetches your **KuCoin Futures account balance** and logs it daily into a Markdow
 - ✅ Logs daily balance to `Trading/Balances/KuCoin/YYYY-MM-DD.md`
 - ✅ Dataview-compatible YAML frontmatter
 - ✅ Prevents duplicate logs via `.json` cache
+- ✅ Cache location configurable via `BALANCE_CACHE_FILE` or `--cache-file`
 - ✅ Computes daily PnL delta
 - ✅ Supports manual backfilling via `--date YYYY-MM-DD`
 - ✅ Configurable request timeout via `KUCOIN_API_TIMEOUT` (default 10s)
@@ -41,6 +42,11 @@ pip install -r requirements-dev.txt
 Update `.env` with your credentials. `BALANCE_FOLDER` should point to the
 folder inside your Obsidian vault where balances are stored, e.g.
 `BALANCE_FOLDER=Trading/Balances/KuCoin`
+Optionally override the cache location:
+
+```env
+BALANCE_CACHE_FILE=/path/to/cache.json
+```
 
 Log today’s balance:
 
@@ -52,6 +58,12 @@ Backfill a past date:
 
 ```bash
 python balancefetcher/start.py --date 2025-08-01
+```
+
+Specify a custom cache file:
+
+```bash
+python balancefetcher/start.py --cache-file /tmp/cache.json
 ```
 
 Markdown files are saved to your vault as:

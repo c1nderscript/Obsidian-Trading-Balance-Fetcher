@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional
 
+from filelock import FileLock
+
 import requests
 import yaml
 from dotenv import load_dotenv
@@ -64,7 +66,9 @@ def load_config() -> Config:
     currency = os.getenv("KUCOIN_BALANCE_CURRENCY", "USDT")
     vault_path = os.getenv("OBSIDIAN_VAULT_PATH", "")
     balance_folder = os.getenv("BALANCE_FOLDER", "Trading/Balances/KuCoin")
-    cache_file = os.path.expanduser("~/.kucoin_balance_log.json")
+    cache_file = os.path.expanduser(
+        os.getenv("BALANCE_CACHE_FILE", "~/.kucoin_balance_log.json")
+    )
     api_timeout = float(os.getenv("KUCOIN_API_TIMEOUT", "10"))
     api_max_retries = int(os.getenv("KUCOIN_API_MAX_RETRIES", "3"))
     api_retry_wait = float(os.getenv("KUCOIN_API_RETRY_WAIT", "1"))
@@ -211,18 +215,22 @@ def already_logged(config: Config, date_str: str) -> bool:
 
     if date_str != config.today:
         return False
-    if not os.path.exists(config.cache_file):
-        return False
-    try:
-        with open(config.cache_file, "r") as f:
-            data = json.load(f)
-        return data.get("last_logged_date") == date_str
-    except (OSError, json.JSONDecodeError, AttributeError) as e:
-        logger.warning("Failed to read cache file %s: %s", config.cache_file, e)
-        return False
-    except Exception as e:
-        logger.exception("Unexpected error accessing cache file %s: %s", config.cache_file, e)
-        raise
+    lock = FileLock(config.cache_file + ".lock")
+    with lock:
+        if not os.path.exists(config.cache_file):
+            return False
+        try:
+            with open(config.cache_file, "r") as f:
+                data = json.load(f)
+            return data.get("last_logged_date") == date_str
+        except (OSError, json.JSONDecodeError, AttributeError) as e:
+            logger.warning("Failed to read cache file %s: %s", config.cache_file, e)
+            return False
+        except Exception as e:
+            logger.exception(
+                "Unexpected error accessing cache file %s: %s", config.cache_file, e
+            )
+            raise
 
 
 def mark_logged(config: Config, date_str: str) -> None:
@@ -230,8 +238,16 @@ def mark_logged(config: Config, date_str: str) -> None:
 
     if date_str != config.today:
         return
-    with open(config.cache_file, "w") as f:
-        json.dump({"last_logged_date": date_str}, f)
+    lock = FileLock(config.cache_file + ".lock")
+    with lock:
+        cache_dir = os.path.dirname(config.cache_file) or "."
+        os.makedirs(cache_dir, exist_ok=True)
+        tmp_file = config.cache_file + ".tmp"
+        with open(tmp_file, "w") as f:
+            json.dump({"last_logged_date": date_str}, f)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_file, config.cache_file)
 
 
 # ---------------------------------------------------------------------------
@@ -246,9 +262,12 @@ def main(argv: Optional[list[str]] = None) -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--date", help="Override date for backfill (YYYY-MM-DD)")
+    parser.add_argument("--cache-file", help="Override cache file location")
     args = parser.parse_args(argv)
 
     config = load_config()
+    if args.cache_file:
+        config.cache_file = os.path.expanduser(args.cache_file)
 
     target_date = args.date if args.date else config.today
 
