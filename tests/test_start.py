@@ -5,6 +5,7 @@ import importlib.util
 import logging
 import json
 import threading
+from datetime import datetime
 import requests
 import pytest
 
@@ -238,3 +239,33 @@ def test_main_cache_file_cli_override(monkeypatch, tmp_path):
 
     start.main(["--cache-file", str(cache_path)])
     assert cache_path.exists()
+
+
+def test_main_logs_balance_and_cache(monkeypatch, tmp_path, caplog):
+    today = datetime.today().strftime("%Y-%m-%d")
+    cache_path = tmp_path / "cache.json"
+    for key, value in {
+        "KUCOIN_API_KEY": "k",
+        "KUCOIN_API_SECRET": "s",
+        "KUCOIN_API_PASSPHRASE": "p",
+        "OBSIDIAN_VAULT_PATH": str(tmp_path),
+    }.items():
+        monkeypatch.setenv(key, value)
+
+    monkeypatch.setattr(start, "fetch_futures_balance", lambda cfg: 100.0)
+    monkeypatch.setattr(start, "read_previous_balance", lambda cfg, d: 90.0)
+
+    with caplog.at_level(logging.INFO):
+        start.main(["--cache-file", str(cache_path)])
+
+    balance_file = tmp_path / "Trading" / "Balances" / "KuCoin" / f"{today}.md"
+    assert balance_file.exists()
+    assert "balance: 100.00" in balance_file.read_text()
+
+    assert cache_path.exists()
+    with cache_path.open() as f:
+        data = json.load(f)
+    assert data["last_logged_date"] == today
+
+    assert "Logged balance" in caplog.text
+    assert "Change since previous day" in caplog.text

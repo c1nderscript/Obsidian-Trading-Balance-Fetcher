@@ -1,20 +1,18 @@
 # Plan
 
 ## Goals
-- Replace manual front-matter parsing in `read_previous_balance` with the `python-frontmatter` library.
-- Add tests for malformed front-matter scenarios.
+- Add integration test calling `start.main()` to verify balance logging, cache updates, and user-visible logging output.
 
 ## Constraints
-- Keep dependencies minimal.
-- Preserve existing balance file format and behavior.
+- Use monkeypatched environment variables and CLI arguments.
+- Avoid external network calls.
 
 ## Risks
-- Additional dependency may increase install time.
-- Malformed files might still bypass parsing; ensure warnings cover these cases.
+- Test depends on current date; ensure paths use `datetime.today()` consistently.
 
 ## Test Plan
 - `pip install -r requirements-dev.txt`
 - `pytest`
 
 ## SemVer Impact
-- Patch release: internal parsing change with new tests.
+- Patch release: tests only, no runtime changes.
