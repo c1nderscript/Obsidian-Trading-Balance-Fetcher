@@ -12,6 +12,7 @@
 
 ## Development
 - Install deps: `pip install -r requirements-dev.txt`
+- Run linters: `pre-commit run --all-files`
 - Run tests: `pytest`
 - Update version in `pyproject.toml` and `CHANGELOG.md` for code changes
 - Follow Conventional Commits
