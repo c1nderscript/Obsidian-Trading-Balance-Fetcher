@@ -4,6 +4,7 @@ from pathlib import Path
 import importlib.util
 import logging
 import json
+import threading
 import requests
 import pytest
 
@@ -152,6 +153,22 @@ def test_mark_and_already_logged(config):
     assert start.already_logged(config, "2024-01-01")
 
 
+def test_mark_logged_thread_safe(config):
+    config.today = "2024-01-01"
+
+    def worker():
+        start.mark_logged(config, "2024-01-01")
+
+    threads = [threading.Thread(target=worker) for _ in range(5)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    with open(config.cache_file) as f:
+        data = json.load(f)
+    assert data["last_logged_date"] == "2024-01-01"
+
+
 def test_read_previous_balance_invalid_yaml(config, tmp_path, caplog):
     prev_date = "2024-01-01"
     file_path = tmp_path / config.balance_folder / f"{prev_date}.md"
@@ -171,3 +188,31 @@ def test_already_logged_invalid_json(config, tmp_path, caplog):
     with caplog.at_level(logging.WARNING):
         assert not start.already_logged(config, "2024-01-01")
     assert "Failed to read cache file" in caplog.text
+
+
+def test_load_config_cache_file_env(monkeypatch, tmp_path):
+    monkeypatch.setenv("KUCOIN_API_KEY", "k")
+    monkeypatch.setenv("KUCOIN_API_SECRET", "s")
+    monkeypatch.setenv("KUCOIN_API_PASSPHRASE", "p")
+    monkeypatch.setenv("OBSIDIAN_VAULT_PATH", "vault")
+    monkeypatch.setenv("BALANCE_CACHE_FILE", str(tmp_path / "env.json"))
+    cfg = start.load_config()
+    assert cfg.cache_file == str(tmp_path / "env.json")
+
+
+def test_main_cache_file_cli_override(monkeypatch, tmp_path):
+    cache_path = tmp_path / "cli.json"
+    for key, value in {
+        "KUCOIN_API_KEY": "k",
+        "KUCOIN_API_SECRET": "s",
+        "KUCOIN_API_PASSPHRASE": "p",
+        "OBSIDIAN_VAULT_PATH": str(tmp_path),
+    }.items():
+        monkeypatch.setenv(key, value)
+
+    monkeypatch.setattr(start, "fetch_futures_balance", lambda cfg: 0.0)
+    monkeypatch.setattr(start, "read_previous_balance", lambda cfg, d: 0.0)
+    monkeypatch.setattr(start, "write_balance", lambda cfg, d, b: None)
+
+    start.main(["--cache-file", str(cache_path)])
+    assert cache_path.exists()
