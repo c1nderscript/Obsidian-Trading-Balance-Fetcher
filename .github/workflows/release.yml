@@ -26,10 +26,12 @@ jobs:
             git tag -a "$TAG" -m "Release $TAG"
             git push origin "$TAG"
           fi
-      - name: Generate release notes
+      - name: Extract release notes
+        run: python scripts/generate_release_notes.py ${{ steps.v.outputs.version }}
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.v.outputs.version }}
-          body_path: .github/RELEASE_NOTES.md
+          body_path: RELEASE_NOTES.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
