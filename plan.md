@@ -1,16 +1,14 @@
 # Plan
 
 ## Goals
-- Build wheel and publish to PyPI on tagged releases via GitHub Actions.
-- Document `pip install obsidian-trading-balance-fetcher` in README.
+- Add a pytest case asserting `load_config()` exits with `SystemExit` when required environment variables are missing and lists all missing variables.
 
 ## Constraints
-- Follow existing GitHub Actions style and keep changes minimal.
-- Assume `PYPI_API_TOKEN` is configured as a repository secret.
+- Follow repository instructions in `AGENTS.md`.
+- Keep changes minimal and reversible.
 
 ## Risks
-- Publishing fails if the secret is missing or invalid.
-- Tagging without updating version or changelog produces incorrect releases.
+- Environment variable cleanup may affect other tests if not isolated.
 
 ## Test Plan
 - `pre-commit run --all-files`
@@ -18,10 +16,10 @@
 - `pip-audit`
 
 ## SemVer Impact
-- Patch release: 0.3.3
+- Patch release: 0.3.4
 
 ## Affected Packages
 - obsidian-trading-balance-fetcher
 
 ## Rollback
-- Revert workflow, docs, version, and changelog changes.
+- Revert the commit.
