@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "obsidian-trading-balance-fetcher"
-version = "0.3.2"
+version = "0.3.3"
 description = "Fetches KuCoin Futures account balances and logs them to Obsidian."
 readme = "README.md"
 requires-python = ">=3.8"

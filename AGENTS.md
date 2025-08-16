@@ -8,7 +8,7 @@
 - Versioning: `pyproject.toml` uses Semantic Versioning
 - Changelog: `CHANGELOG.md` in Keep a Changelog format
 - CI: GitHub Actions workflows in `.github/workflows`
-- Release: tag `v<version>` on main; changelog and version must match
+- Release: tag `v<version>` on main; changelog and version must match; tagged releases publish to PyPI using `PYPI_API_TOKEN`
 - Docker: `Dockerfile` installs the project and runs the `balancefetcher` console script
 
 ## Development
