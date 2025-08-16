@@ -1,15 +1,16 @@
 # Plan
 
 ## Goals
-- Generate release notes from `CHANGELOG.md` during the release workflow.
+- Build wheel and publish to PyPI on tagged releases via GitHub Actions.
+- Document `pip install obsidian-trading-balance-fetcher` in README.
 
 ## Constraints
 - Follow existing GitHub Actions style and keep changes minimal.
-- Avoid persistent artifacts; release notes should be generated at runtime.
+- Assume `PYPI_API_TOKEN` is configured as a repository secret.
 
 ## Risks
-- Release workflow fails if the changelog entry for the version is missing or misformatted.
-- Incorrect parsing could produce empty release notes.
+- Publishing fails if the secret is missing or invalid.
+- Tagging without updating version or changelog produces incorrect releases.
 
 ## Test Plan
 - `pre-commit run --all-files`
@@ -17,10 +18,10 @@
 - `pip-audit`
 
 ## SemVer Impact
-- Patch release: 0.3.2
+- Patch release: 0.3.3
 
 ## Affected Packages
 - obsidian-trading-balance-fetcher
 
 ## Rollback
-- Revert script, workflow, version, and changelog changes.
+- Revert workflow, docs, version, and changelog changes.

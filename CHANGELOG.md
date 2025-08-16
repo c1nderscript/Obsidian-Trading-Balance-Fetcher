@@ -3,6 +3,11 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+## [0.3.3] - 2025-08-16
+### Added
+- Publish tagged releases to PyPI via GitHub Actions.
+- Document installation via `pip install obsidian-trading-balance-fetcher`.
+
 ## [0.3.2] - 2025-08-16
 ### Changed
 - Generate release notes from `CHANGELOG.md` during release.

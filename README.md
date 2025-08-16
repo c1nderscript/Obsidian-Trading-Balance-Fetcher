@@ -26,6 +26,14 @@ Fetches your **KuCoin Futures account balance** and logs it daily into a Markdow
 
 ## 📦 Installation
 
+Install from PyPI:
+
+```bash
+pip install obsidian-trading-balance-fetcher
+```
+
+Or install from source:
+
 ```bash
 git clone https://github.com/c1nderscript/Obsidian-Trading-Balance-Fetcher.git
 cd Obsidian-Trading-Balance-Fetcher
