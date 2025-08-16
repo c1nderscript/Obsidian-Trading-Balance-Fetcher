@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  balancefetcher:
+    build: .
+    env_file: .env
+    volumes:
+      - ./vault:/vault
+    command: ["sh", "-c", "while true; do balancefetcher; sleep 86400; done"]
+    restart: unless-stopped

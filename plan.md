@@ -1,26 +1,31 @@
 # Plan
 
 ## Goals
-- Remove duplicate `.env.example` files and keep canonical copy at repository root.
-- Ensure root `.env.example` documents required and optional environment variables.
-- Update README and any docs to reference the root `.env.example`.
+- Add a `Dockerfile` that installs the package and runs the `balancefetcher` console script.
+- Document Docker build/run instructions in `README.md`.
+- Provide a sample `docker-compose.yml` for daily execution.
 
 ## Constraints
-- Maintain existing development workflow and tooling.
+- Preserve the existing Python-based workflow and dependency management.
 - Keep changes minimal and reversible.
 
 ## Risks
-- Missing environment variable descriptions could confuse users.
-- Stale references to removed file might persist in docs.
+- Misconfigured volumes or env vars could prevent balance files from being written.
+- Docker image size may grow if dependencies are not pruned.
 
 ## Test Plan
 - `pip install -r requirements-dev.txt`
 - `pre-commit run --all-files`
 - `pytest`
 - `pip-audit -r requirements.lock`
+- `docker build -t balancefetcher .`
 
 ## SemVer Impact
-- Patch release: documentation and configuration cleanup.
+- Minor release: new Docker packaging is a backwards-compatible feature.
+
+## Affected Packages
+- obsidian-trading-balance-fetcher
 
 ## Rollback
-- Restore removed `.env.example` and revert documentation changes.
+- Remove `Dockerfile` and `docker-compose.yml`.
+- Revert documentation, version, and changelog updates.

@@ -3,6 +3,11 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-08-16
+### Added
+- Dockerfile exposing the `balancefetcher` console script.
+- Documentation for building and running via Docker with optional `docker-compose` scheduling.
+
 ## [0.2.5] - 2025-08-16
 ### Changed
 - Document all environment variables and optional settings in root `.env.example`.

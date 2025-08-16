@@ -77,6 +77,26 @@ balance: 111.15
 ---
 ```
 
+## 🐳 Docker
+
+Build the image:
+
+```bash
+docker build -t balancefetcher .
+```
+
+Run with your `.env` and mounted vault (set `OBSIDIAN_VAULT_PATH=/vault` in the env file):
+
+```bash
+docker run --rm --env-file .env -v /path/to/vault:/vault balancefetcher
+```
+
+For unattended daily execution, see the sample `docker-compose.yml`.
+
+```bash
+docker compose up -d
+```
+
 ## 📊 Obsidian Integration
 
 ### Dataview Table (last 7 days)
