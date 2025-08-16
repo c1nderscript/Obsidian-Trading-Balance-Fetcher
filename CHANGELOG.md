@@ -3,6 +3,13 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+## [0.2.5] - 2025-08-16
+### Changed
+- Document all environment variables and optional settings in root `.env.example`.
+- README now references the canonical `.env.example`.
+### Removed
+- Duplicate `.env.example` under `balancefetcher/`.
+
 ## [0.2.4] - 2025-08-16
 ### Changed
 - Pin runtime dependencies and add `requirements.lock` for deterministic installs.
