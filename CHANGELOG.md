@@ -3,6 +3,10 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+## [0.3.4] - 2025-08-16
+### Added
+- Test covering missing required environment variables for `load_config()`.
+
 ## [0.3.3] - 2025-08-16
 ### Added
 - Publish tagged releases to PyPI via GitHub Actions.

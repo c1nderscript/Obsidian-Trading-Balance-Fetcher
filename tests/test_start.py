@@ -212,6 +212,26 @@ def test_already_logged_invalid_json(config, tmp_path, caplog):
     assert "Failed to read cache file" in caplog.text
 
 
+def test_load_config_missing_required(monkeypatch):
+    for var in [
+        "KUCOIN_API_KEY",
+        "KUCOIN_API_SECRET",
+        "KUCOIN_API_PASSPHRASE",
+        "OBSIDIAN_VAULT_PATH",
+    ]:
+        monkeypatch.delenv(var, raising=False)
+    with pytest.raises(SystemExit) as exc:
+        start.load_config()
+    msg = str(exc.value)
+    for var in [
+        "KUCOIN_API_KEY",
+        "KUCOIN_API_SECRET",
+        "KUCOIN_API_PASSPHRASE",
+        "OBSIDIAN_VAULT_PATH",
+    ]:
+        assert var in msg
+
+
 def test_load_config_cache_file_env(monkeypatch, tmp_path):
     monkeypatch.setenv("KUCOIN_API_KEY", "k")
     monkeypatch.setenv("KUCOIN_API_SECRET", "s")
