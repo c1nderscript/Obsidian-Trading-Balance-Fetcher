@@ -3,6 +3,11 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+## [0.2.4] - 2025-08-16
+### Changed
+- Pin runtime dependencies and add `requirements.lock` for deterministic installs.
+- Installation instructions now reference the lock file.
+
 ## [0.2.3] - 2025-08-09
 ### Added
 - Ruff and Black linting via pre-commit and GitHub Actions workflow.
