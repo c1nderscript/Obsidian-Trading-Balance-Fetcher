@@ -3,8 +3,12 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+## [0.3.1] - 2025-08-16
 ### Added
 - Document cron and systemd deployment with environment variable setup.
+
+### Security
+- Run `pip-audit` in CI to fail on vulnerable dependencies.
 
 ## [0.3.0] - 2025-08-16
 ### Added

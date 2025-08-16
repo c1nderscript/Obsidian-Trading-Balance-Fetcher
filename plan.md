@@ -1,27 +1,26 @@
 # Plan
 
 ## Goals
-- Add a "Deployment" section to the README with cron and systemd examples.
-- Document environment variable setup for production hosts.
+- Add a dependency vulnerability audit to CI using `pip-audit`.
 
 ## Constraints
-- Documentation only; no code changes.
-- Use minimal, reversible examples.
+- Use existing GitHub Actions workflow style.
+- Keep changes minimal and reversible.
 
 ## Risks
-- Misconfigured environment files could expose credentials.
-- Incorrect scheduling may lead to missed runs.
+- CI failures due to transient advisory database issues.
+- Increased runtime for CI jobs.
 
 ## Test Plan
 - `pre-commit run --all-files`
 - `pytest`
-- `pip-audit -r requirements.lock`
+- `pip-audit`
 
 ## SemVer Impact
-- No version change; docs only.
+- Patch release: 0.3.1
 
 ## Affected Packages
-- obsidian-trading-balance-fetcher (documentation)
+- obsidian-trading-balance-fetcher
 
 ## Rollback
-- Revert README, CHANGELOG, and plan updates.
+- Revert workflow, documentation, and version changes.
