@@ -21,6 +21,7 @@ Fetches your **KuCoin Futures account balance** and logs it daily into a Markdow
 - ✅ Supports manual backfilling via `--date YYYY-MM-DD`
 - ✅ Configurable request timeout via `KUCOIN_API_TIMEOUT` (default 10s)
 - ✅ Retry logic configurable via `KUCOIN_API_MAX_RETRIES` and `KUCOIN_API_RETRY_WAIT`
+- ✅ Logging verbosity configurable via `LOG_LEVEL` (default `INFO`)
 
 ---
 
@@ -56,6 +57,12 @@ Optionally override the cache location:
 
 ```env
 BALANCE_CACHE_FILE=/path/to/cache.json
+```
+
+Adjust logging verbosity (default `INFO`):
+
+```env
+LOG_LEVEL=DEBUG
 ```
 
 Log today’s balance:

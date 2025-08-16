@@ -3,6 +3,9 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+### Added
+- Allow configuring log verbosity via `LOG_LEVEL` environment variable.
+
 ## [0.3.4] - 2025-08-16
 ### Added
 - Test covering missing required environment variables for `load_config()`.
