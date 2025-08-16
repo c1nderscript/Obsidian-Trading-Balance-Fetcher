@@ -1,14 +1,16 @@
 # Plan
 
 ## Goals
-- Add a pytest case asserting `load_config()` exits with `SystemExit` when required environment variables are missing and lists all missing variables.
+- Add `LOG_LEVEL` environment variable defaulting to `INFO`.
+- Modify `setup_logging()` to respect `LOG_LEVEL`.
+- Document `LOG_LEVEL` in `.env.example` and `README`.
 
 ## Constraints
 - Follow repository instructions in `AGENTS.md`.
 - Keep changes minimal and reversible.
 
 ## Risks
-- Environment variable cleanup may affect other tests if not isolated.
+- Invalid log level values could cause confusion.
 
 ## Test Plan
 - `pre-commit run --all-files`
@@ -16,10 +18,10 @@
 - `pip-audit`
 
 ## SemVer Impact
-- Patch release: 0.3.4
+- Minor release: `0.4.0`
 
 ## Affected Packages
-- obsidian-trading-balance-fetcher
+- `obsidian-trading-balance-fetcher`
 
 ## Rollback
 - Revert the commit.

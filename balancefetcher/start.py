@@ -51,10 +51,10 @@ logger = logging.getLogger(__name__)
 
 def setup_logging() -> None:
     """Configure application wide logging."""
+    level_name = os.getenv("LOG_LEVEL", "INFO").upper()
+    level = getattr(logging, level_name, logging.INFO)
 
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s"
-    )
+    logging.basicConfig(level=level, format="%(asctime)s %(levelname)s: %(message)s")
 
 
 def load_config() -> Config:
