@@ -32,7 +32,7 @@ cd Obsidian-Trading-Balance-Fetcher
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.lock
-cp .env.example .env
+cp .env.example .env  # sample file lives at repo root
 
 # Install development dependencies if you plan to run tests
 # (includes runtime requirements automatically)
@@ -41,7 +41,9 @@ pip install -r requirements-dev.txt
 
 Update `.env` with your credentials. `BALANCE_FOLDER` should point to the
 folder inside your Obsidian vault where balances are stored, e.g.
-`BALANCE_FOLDER=Trading/Balances/KuCoin`
+`BALANCE_FOLDER=Trading/Balances/KuCoin`. The `.env.example` file documents all
+optional settings such as `KUCOIN_BALANCE_CURRENCY`.
+
 Optionally override the cache location:
 
 ```env

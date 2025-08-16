@@ -1,17 +1,17 @@
 # Plan
 
 ## Goals
-- Pin runtime dependencies in `requirements.txt`.
-- Generate a deterministic lock file `requirements.lock`.
-- Update installation docs to reference the lock file.
+- Remove duplicate `.env.example` files and keep canonical copy at repository root.
+- Ensure root `.env.example` documents required and optional environment variables.
+- Update README and any docs to reference the root `.env.example`.
 
 ## Constraints
-- Use pip and `pip-tools` within the existing `requirements*.txt` workflow.
-- Preserve current development setup via `requirements-dev.txt`.
+- Maintain existing development workflow and tooling.
+- Keep changes minimal and reversible.
 
 ## Risks
-- Locked versions may become outdated and need periodic refresh.
-- Transitive dependencies resolved by `pip-compile` could introduce conflicts.
+- Missing environment variable descriptions could confuse users.
+- Stale references to removed file might persist in docs.
 
 ## Test Plan
 - `pip install -r requirements-dev.txt`
@@ -20,5 +20,7 @@
 - `pip-audit -r requirements.lock`
 
 ## SemVer Impact
-- Patch release: dependency pinning and documentation only.
+- Patch release: documentation and configuration cleanup.
 
+## Rollback
+- Restore removed `.env.example` and revert documentation changes.
