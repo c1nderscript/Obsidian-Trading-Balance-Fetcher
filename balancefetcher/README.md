@@ -29,7 +29,7 @@ You'll see your prompt change to something like:
 ## 4. Install required dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.lock
 ```
 
 ## 5. (Optional) Install development dependencies

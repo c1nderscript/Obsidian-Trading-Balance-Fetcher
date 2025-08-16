@@ -1,5 +1,5 @@
-python-dotenv>=1.0
-pyyaml>=6.0
-requests>=2.31
-filelock>=3.12
-python-frontmatter>=1.1
+python-dotenv==1.1.1
+pyyaml==6.0.2
+requests==2.32.4
+filelock==3.19.1
+python-frontmatter==1.1.0

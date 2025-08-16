@@ -31,7 +31,7 @@ git clone https://github.com/c1nderscript/Obsidian-Trading-Balance-Fetcher.git
 cd Obsidian-Trading-Balance-Fetcher
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.lock
 cp .env.example .env
 
 # Install development dependencies if you plan to run tests
