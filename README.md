@@ -97,6 +97,62 @@ For unattended daily execution, see the sample `docker-compose.yml`.
 docker compose up -d
 ```
 
+## 🛠 Deployment
+
+### Environment variables
+
+Copy the sample env file and fill in your credentials:
+
+```bash
+sudo cp .env.example /opt/balancefetcher/.env
+sudo chmod 600 /opt/balancefetcher/.env
+```
+
+The application automatically loads this file when run from `/opt/balancefetcher`.
+
+### Cron
+
+Run the fetcher daily at midnight:
+
+```cron
+0 0 * * * cd /opt/balancefetcher && /usr/bin/python3 balancefetcher/start.py >> /var/log/balancefetcher.log 2>&1
+```
+
+### systemd
+
+`/etc/systemd/system/balancefetcher.service`:
+
+```ini
+[Unit]
+Description=Obsidian Trading Balance Fetcher
+
+[Service]
+Type=oneshot
+EnvironmentFile=/opt/balancefetcher/.env
+WorkingDirectory=/opt/balancefetcher
+ExecStart=/usr/bin/python3 balancefetcher/start.py
+```
+
+`/etc/systemd/system/balancefetcher.timer`:
+
+```ini
+[Unit]
+Description=Run balancefetcher daily
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+Enable the timer:
+
+```bash
+sudo systemctl enable --now balancefetcher.timer
+```
+
 ## 📊 Obsidian Integration
 
 ### Dataview Table (last 7 days)

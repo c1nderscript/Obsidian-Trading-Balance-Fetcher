@@ -3,6 +3,9 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+### Added
+- Document cron and systemd deployment with environment variable setup.
+
 ## [0.3.0] - 2025-08-16
 ### Added
 - Dockerfile exposing the `balancefetcher` console script.
