@@ -1,16 +1,17 @@
 # Plan
 
 ## Goals
-- Add `LOG_LEVEL` environment variable defaulting to `INFO`.
-- Modify `setup_logging()` to respect `LOG_LEVEL`.
-- Document `LOG_LEVEL` in `.env.example` and `README`.
+- Incorporate Syft to generate SBOM for the built wheel in the release workflow.
+- Attach the generated SBOM to GitHub Releases.
 
 ## Constraints
 - Follow repository instructions in `AGENTS.md`.
 - Keep changes minimal and reversible.
+- Preserve existing release workflow behavior.
 
 ## Risks
-- Invalid log level values could cause confusion.
+- Syft installation or execution may fail, breaking the release process.
+- Uploading assets requires the release to exist.
 
 ## Test Plan
 - `pre-commit run --all-files`
@@ -18,7 +19,7 @@
 - `pip-audit`
 
 ## SemVer Impact
-- Minor release: `0.4.0`
+- No version change (CI-only).
 
 ## Affected Packages
 - `obsidian-trading-balance-fetcher`

@@ -5,6 +5,7 @@ All notable changes to this project will be documented here.
 
 ### Added
 - Allow configuring log verbosity via `LOG_LEVEL` environment variable.
+- Generate SBOM for the built wheel and attach it to GitHub Releases.
 
 ## [0.3.4] - 2025-08-16
 ### Added
